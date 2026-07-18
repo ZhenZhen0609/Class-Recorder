@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>家教课时记账 (包管理版)</title>
+    <title>Class-Recorder</title>
     <style>
         :root {
             --primary: #4776E6;
@@ -41,7 +41,6 @@
             font-weight: 800;
         }
 
-        /* 顶部总计面板 */
         .total-dashboard {
             display: flex;
             justify-content: space-between;
@@ -56,14 +55,12 @@
         .total-label { font-size: 11px; opacity: 0.8; margin-bottom: 4px; }
         .total-value { font-size: 1.1rem; font-weight: 700; }
 
-        /* 课时包卡片 */
         .package-card {
             background: var(--card-bg);
             border-radius: 24px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.04);
             margin-bottom: 25px;
-            position: relative;
             border: 1px solid rgba(255,255,255,0.8);
         }
 
@@ -85,97 +82,57 @@
         .balance-num.negative { color: var(--danger); }
         .balance-label { font-size: 11px; color: var(--text-sub); }
 
-        /* 消耗明细列表 */
         .lesson-list { margin-top: 10px; }
         .lesson-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            padding: 12px 0;
             font-size: 14px;
             border-bottom: 1px solid #f9f9f9;
         }
         .lesson-item:last-child { border-bottom: none; }
-        .lesson-info { display: flex; flex-direction: column; }
+        .lesson-info { display: flex; flex-direction: column; flex: 1; }
         .lesson-topic { font-weight: 500; }
         .lesson-date { font-size: 11px; color: var(--text-sub); }
+        
+        .lesson-action { display: flex; align-items: center; gap: 10px; }
         .lesson-amount { font-weight: 600; color: var(--text-main); }
+        .btn-delete-item {
+            color: #ccc;
+            padding: 5px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        .btn-delete-item:active { background: #fff5f5; color: var(--danger); }
 
-        /* 底部操作 */
         .fab-container {
             position: fixed;
-            bottom: 30px;
-            left: 0; right: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            z-index: 1000;
+            bottom: 30px; left: 0; right: 0;
+            display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 1000;
         }
-
         .btn-main {
-            width: 80%;
-            max-width: 300px;
-            padding: 16px;
-            border-radius: 50px;
-            border: none;
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
+            width: 80%; max-width: 300px; padding: 16px; border-radius: 50px; border: none;
+            color: white; font-weight: 700; font-size: 16px;
             box-shadow: 0 10px 25px rgba(71, 118, 230, 0.3);
-            cursor: pointer;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
         }
+        .btn-sub-group { display: flex; gap: 15px; }
+        .btn-small { padding: 8px 18px; border-radius: 20px; border: 1px solid #ddd; background: white; font-size: 13px; color: var(--text-sub); }
 
-        .btn-sub-group {
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn-small {
-            padding: 8px 18px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            background: white;
-            font-size: 13px;
-            color: var(--text-sub);
-        }
-
-        /* 弹窗 */
         .modal-overlay {
-            position: fixed;
-            top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 2000;
+            position: fixed; top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; padding: 20px; z-index: 2000;
         }
-
-        .modal {
-            background: white;
-            padding: 25px;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 340px;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 2px solid #f1f2f6;
-            border-radius: 12px;
-            font-size: 16px;
-            outline: none;
-        }
-
+        .modal { background: white; padding: 25px; border-radius: 24px; width: 100%; max-width: 340px; }
+        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #f1f2f6; border-radius: 12px; font-size: 16px; outline: none; }
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .btn-confirm { flex: 2; padding: 14px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 600; }
         .btn-cancel { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: #fff; }
-
         .empty-state { text-align: center; padding: 50px 20px; color: var(--text-sub); font-size: 14px; }
     </style>
 </head>
@@ -200,11 +157,8 @@
         </div>
     </div>
 
-    <div id="package-container">
-        <!-- 课时包卡片将在这里渲染 -->
-    </div>
+    <div id="package-container"></div>
 
-    <!-- 底部操作按钮 -->
     <div class="fab-container">
         <button class="btn-main" onclick="openModal('EXPENSE')">✨ 记一节课</button>
         <div class="btn-sub-group">
@@ -213,7 +167,6 @@
         </div>
     </div>
 
-    <!-- 弹窗 -->
     <div class="modal-overlay" id="modal">
         <div class="modal">
             <h3 id="modal-title" style="margin-bottom: 15px;">入账金额</h3>
@@ -227,7 +180,6 @@
     </div>
 
     <script>
-        // 数据结构：packages: [ {id, amount, topic, date, lessons: [{topic, amount, date}]} ]
         let storage = JSON.parse(localStorage.getItem('tutor_pkg_v1')) || { packages: [] };
         let currentMode = 'INCOME';
 
@@ -242,24 +194,16 @@
             const title = document.getElementById('modal-title');
             const amtInput = document.getElementById('amount-input');
             const topicInput = document.getElementById('topic-input');
-
             modal.style.display = 'flex';
-            
             if (mode === 'INCOME') {
                 title.innerText = "新建入账包";
-                amtInput.placeholder = "输入入账总额 (如 1200)";
                 amtInput.value = "";
-                topicInput.placeholder = "包名称 (如 10月课时费)";
+                topicInput.placeholder = "包名称";
             } else {
-                if (storage.packages.length === 0) {
-                    alert("请先创建一个入账包！");
-                    closeModal();
-                    return;
-                }
+                if (storage.packages.length === 0) { alert("请先创建一个入账包！"); closeModal(); return; }
                 title.innerText = "记一节课";
-                amtInput.placeholder = "本节课费用";
-                amtInput.value = "120"; // 默认120
-                topicInput.placeholder = "上课内容 (如 数学函数)";
+                amtInput.value = "120";
+                topicInput.placeholder = "上课内容";
             }
             amtInput.focus();
         }
@@ -269,44 +213,44 @@
         function handleSubmit() {
             const amount = parseFloat(document.getElementById('amount-input').value);
             const topic = document.getElementById('topic-input').value.trim() || (currentMode === 'INCOME' ? "新课时包" : "常规课");
-            
             if (!amount) return;
-
             if (currentMode === 'INCOME') {
-                const newPkg = {
-                    id: Date.now(),
-                    amount: amount,
-                    topic: topic,
-                    date: new Date().toLocaleDateString(),
-                    lessons: []
-                };
-                storage.packages.unshift(newPkg); // 新包放在最前面
+                const newPkg = { id: Date.now(), amount: amount, topic: topic, date: new Date().toLocaleDateString(), lessons: [] };
+                storage.packages.unshift(newPkg);
             } else {
-                // 默认扣除到最顶部的那个包（即最新的包）
                 const activePkg = storage.packages[0];
                 activePkg.lessons.unshift({
+                    id: Date.now(), // 给每条记录加个ID方便删除
                     topic: topic,
                     amount: amount,
                     date: new Date().toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'})
                 });
             }
-
             saveData();
             closeModal();
         }
 
+        // 删除单条记录
+        function deleteLesson(pkgId, lessonId) {
+            if(confirm("确定删除这条课时记录吗？")) {
+                const pkg = storage.packages.find(p => p.id === pkgId);
+                if (pkg) {
+                    pkg.lessons = pkg.lessons.filter(l => l.id !== lessonId);
+                    saveData();
+                }
+            }
+        }
+
+        // 删除整个包
         function deletePackage(id) {
-            if(confirm("确定要删除这个包及其所有记录吗？")) {
+            if(confirm("确定要删除整个包及其所有记录吗？")) {
                 storage.packages = storage.packages.filter(p => p.id !== id);
                 saveData();
             }
         }
 
         function resetData() {
-            if(confirm("确定清空所有数据吗？")) {
-                storage.packages = [];
-                saveData();
-            }
+            if(confirm("确定清空所有数据吗？")) { storage.packages = []; saveData(); }
         }
 
         function render() {
@@ -314,11 +258,8 @@
             const totalInDisp = document.getElementById('total-in');
             const totalOutDisp = document.getElementById('total-out');
             const totalNetDisp = document.getElementById('total-net');
-            
             container.innerHTML = '';
-            
-            let overallIn = 0;
-            let overallOut = 0;
+            let overallIn = 0, overallOut = 0;
 
             if (storage.packages.length === 0) {
                 container.innerHTML = '<div class="empty-state">目前没有记录，请点击“新入账包”开始</div>';
@@ -327,7 +268,6 @@
             storage.packages.forEach(pkg => {
                 const spent = pkg.lessons.reduce((sum, l) => sum + l.amount, 0);
                 const balance = pkg.amount - spent;
-                
                 overallIn += pkg.amount;
                 overallOut += spent;
 
@@ -337,7 +277,10 @@
                             <span class="lesson-topic">${l.topic}</span>
                             <span class="lesson-date">${l.date}</span>
                         </div>
-                        <span class="lesson-amount">-￥${l.amount}</span>
+                        <div class="lesson-action">
+                            <span class="lesson-amount">-￥${l.amount}</span>
+                            <span class="btn-delete-item" onclick="deleteLesson(${pkg.id}, ${l.id})">×</span>
+                        </div>
                     </div>
                 `).join('');
 
@@ -351,7 +294,7 @@
                             <div class="package-balance">
                                 <div class="balance-label">剩余余额</div>
                                 <div class="balance-num ${balance < 0 ? 'negative' : 'positive'}">
-                                    ${balance < 0 ? '' : ''}${balance.toFixed(0)}
+                                    ${balance.toFixed(0)}
                                 </div>
                             </div>
                         </div>
@@ -368,7 +311,6 @@
             totalNetDisp.innerText = `¥${net.toFixed(0)}`;
             totalNetDisp.style.color = net < 0 ? 'var(--danger)' : 'white';
         }
-
         render();
     </script>
 </body>
