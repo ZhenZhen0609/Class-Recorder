@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Class Recorder</title>
+    <title>家教课时记账 (包管理版)</title>
     <style>
         :root {
             --primary: #4776E6;
@@ -18,9 +18,7 @@
         }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
@@ -31,193 +29,117 @@
             padding: 20px;
             max-width: 500px;
             margin: 0 auto;
-            padding-bottom: 120px; /* 为底部按钮留出空间 */
+            padding-bottom: 140px;
         }
 
-        header {
-            margin: 20px 0 30px;
-            text-align: center;
-        }
-
+        header { margin: 10px 0 20px; text-align: center; }
         h1 {
-            font-size: 1.8rem;
-            letter-spacing: -0.5px;
+            font-size: 1.6rem;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
         }
 
-        /* 总计面板 */
-        .dashboard {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        /* 顶部总计面板 */
+        .total-dashboard {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: #2f3542;
+            border-radius: 18px;
+            color: white;
             margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
+        .total-item { text-align: center; }
+        .total-label { font-size: 11px; opacity: 0.8; margin-bottom: 4px; }
+        .total-value { font-size: 1.1rem; font-weight: 700; }
 
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: var(--text-sub);
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        .stat-value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        /* 当前课时包卡片 */
-        .active-card {
+        /* 课时包卡片 */
+        .package-card {
             background: var(--card-bg);
             border-radius: 24px;
-            padding: 28px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
-            margin-bottom: 30px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            margin-bottom: 25px;
             position: relative;
-            overflow: hidden;
             border: 1px solid rgba(255,255,255,0.8);
         }
 
-        .active-card.alert { background: #fffcf0; border: 1px solid var(--warning); }
-        .active-card.empty { background: #fff5f5; border: 1px solid var(--danger); }
+        .package-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
 
-        .card-header {
+        .package-title { font-weight: 800; font-size: 17px; color: var(--text-main); }
+        .package-date { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+        
+        .package-balance { text-align: right; }
+        .balance-num { font-size: 22px; font-weight: 800; }
+        .balance-num.positive { color: var(--success); }
+        .balance-num.negative { color: var(--danger); }
+        .balance-label { font-size: 11px; color: var(--text-sub); }
+
+        /* 消耗明细列表 */
+        .lesson-list { margin-top: 10px; }
+        .lesson-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f9f9f9;
         }
+        .lesson-item:last-child { border-bottom: none; }
+        .lesson-info { display: flex; flex-direction: column; }
+        .lesson-topic { font-weight: 500; }
+        .lesson-date { font-size: 11px; color: var(--text-sub); }
+        .lesson-amount { font-weight: 600; color: var(--text-main); }
 
-        .badge {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 12px;
-            background: #f1f2f6;
-            color: var(--text-sub);
-        }
-
-        .progress-container {
-            height: 12px;
-            background: #eee;
-            border-radius: 6px;
-            margin: 20px 0 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            width: 0%;
-            transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* 底部圆形打卡按钮 (FAB) */
+        /* 底部操作 */
         .fab-container {
             position: fixed;
-            bottom: 35px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 30px;
+            left: 0; right: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 12px;
             z-index: 1000;
         }
 
-        .fab {
-            width: 76px;
-            height: 76px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        .btn-main {
+            width: 80%;
+            max-width: 300px;
+            padding: 16px;
+            border-radius: 50px;
             border: none;
             color: white;
+            font-weight: 700;
             font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 8px 25px rgba(71, 118, 230, 0.4);
+            box-shadow: 0 10px 25px rgba(71, 118, 230, 0.3);
             cursor: pointer;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .btn-sub-group {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.2s ease;
-            -webkit-user-select: none;
+            gap: 15px;
         }
 
-        .fab:active {
-            transform: scale(0.9);
-            box-shadow: 0 4px 10px rgba(71, 118, 230, 0.4);
-        }
-
-        .fab:disabled {
-            background: #ced6e0;
-            box-shadow: none;
-            opacity: 0.8;
-        }
-
-        .fab-label {
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--primary);
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(255,255,255,0.8);
-        }
-
-        /* 辅助操作按钮 */
-        .action-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .btn-sub {
-            padding: 12px;
-            border-radius: 16px;
-            border: 1px solid #e0e0e0;
+        .btn-small {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
             background: white;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
+            font-size: 13px;
             color: var(--text-sub);
-            transition: all 0.2s;
         }
-
-        .btn-sub:active { background: #f8f9fa; }
-
-        /* 历史列表 */
-        .history-section { margin-top: 40px; }
-        .section-title {
-            font-size: 14px;
-            color: var(--text-sub);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .history-item {
-            background: rgba(255,255,255,0.5);
-            padding: 15px 20px;
-            border-radius: 18px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            border: 1px solid transparent;
-        }
-
-        .history-date { color: var(--text-sub); font-size: 12px; margin-top: 2px;}
 
         /* 弹窗 */
         .modal-overlay {
@@ -234,34 +156,27 @@
 
         .modal {
             background: white;
-            padding: 30px;
-            border-radius: 28px;
+            padding: 25px;
+            border-radius: 24px;
             width: 100%;
             max-width: 340px;
-            text-align: center;
         }
 
         input {
             width: 100%;
-            padding: 15px;
-            margin: 20px 0;
-            border: 2px solid #eee;
-            border-radius: 15px;
-            font-size: 18px;
-            text-align: center;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 2px solid #f1f2f6;
+            border-radius: 12px;
+            font-size: 16px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        input:focus { border-color: var(--primary); }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-confirm { flex: 2; padding: 14px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 600; }
+        .btn-cancel { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: #fff; }
 
-        .renew-tip {
-            color: var(--danger);
-            font-weight: 800;
-            text-align: center;
-            margin: 10px 0;
-            font-size: 14px;
-        }
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-sub); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -270,193 +185,188 @@
         <h1>Class Recorder</h1>
     </header>
 
-    <div class="dashboard">
-        <div class="stat-item">
-            <span class="stat-label">累计总收入</span>
-            <div class="stat-value" id="total-income">¥ 0</div>
+    <div class="total-dashboard">
+        <div class="total-item">
+            <div class="total-label">累计入账</div>
+            <div id="total-in" class="total-value">¥0</div>
         </div>
-        <div class="stat-item">
-            <span class="stat-label">总授课时长</span>
-            <div class="stat-value" id="total-hours">0 小时</div>
+        <div class="total-item" style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px;">
+            <div class="total-label">总消耗</div>
+            <div id="total-out" class="total-value">¥0</div>
+        </div>
+        <div class="total-item" style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px;">
+            <div class="total-label">总剩余</div>
+            <div id="total-net" class="total-value">¥0</div>
         </div>
     </div>
 
-    <div id="active-container">
-        <!-- 当前包 -->
+    <div id="package-container">
+        <!-- 课时包卡片将在这里渲染 -->
     </div>
 
-    <div class="action-group">
-        <button class="btn-sub" onclick="openModal()">💰 新入账记录</button>
-        <button class="btn-sub" onclick="resetData()">🧹 清空全部</button>
-    </div>
-
-    <div class="history-section">
-        <div class="section-title">历史记录</div>
-        <div id="history-list"></div>
-    </div>
-
-    <!-- 悬浮圆球按钮 -->
-    <div class="fab-container" id="fab-box">
-        <!-- 动态渲染 -->
+    <!-- 底部操作按钮 -->
+    <div class="fab-container">
+        <button class="btn-main" onclick="openModal('EXPENSE')">✨ 记一节课</button>
+        <div class="btn-sub-group">
+            <button class="btn-small" onclick="openModal('INCOME')">💰 新入账包</button>
+            <button class="btn-small" onclick="resetData()">🧹 清空</button>
+        </div>
     </div>
 
     <!-- 弹窗 -->
     <div class="modal-overlay" id="modal">
         <div class="modal">
-            <h3 style="font-size: 20px;">录入新金额</h3>
-            <p style="font-size: 13px; color: #999; margin-top: 8px;">按 120元/小时 自动折算课时</p>
-            <input type="number" id="income-input" placeholder="输入金额" value="1200" inputmode="numeric">
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-sub" style="flex: 1;" onclick="closeModal()">取消</button>
-                <button id="confirm-btn" class="btn-sub" style="flex: 2; background: var(--primary); color: white; border: none;" onclick="addNewPackage()">确认开启</button>
+            <h3 id="modal-title" style="margin-bottom: 15px;">入账金额</h3>
+            <input type="number" id="amount-input" placeholder="输入金额" inputmode="decimal">
+            <input type="text" id="topic-input" placeholder="备注主题">
+            <div class="btn-group">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-confirm" onclick="handleSubmit()">确认保存</button>
             </div>
         </div>
     </div>
 
     <script>
-        const UNIT_PRICE = 120;
-        let storage = JSON.parse(localStorage.getItem('tutor_data_v2')) || { packages: [] };
+        // 数据结构：packages: [ {id, amount, topic, date, lessons: [{topic, amount, date}]} ]
+        let storage = JSON.parse(localStorage.getItem('tutor_pkg_v1')) || { packages: [] };
+        let currentMode = 'INCOME';
 
         function saveData() {
-            localStorage.setItem('tutor_data_v2', JSON.stringify(storage));
+            localStorage.setItem('tutor_pkg_v1', JSON.stringify(storage));
             render();
         }
 
-        function openModal() { document.getElementById('modal').style.display = 'flex'; document.getElementById('income-input').focus(); }
+        function openModal(mode) {
+            currentMode = mode;
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const amtInput = document.getElementById('amount-input');
+            const topicInput = document.getElementById('topic-input');
+
+            modal.style.display = 'flex';
+            
+            if (mode === 'INCOME') {
+                title.innerText = "新建入账包";
+                amtInput.placeholder = "输入入账总额 (如 1200)";
+                amtInput.value = "";
+                topicInput.placeholder = "包名称 (如 10月课时费)";
+            } else {
+                if (storage.packages.length === 0) {
+                    alert("请先创建一个入账包！");
+                    closeModal();
+                    return;
+                }
+                title.innerText = "记一节课";
+                amtInput.placeholder = "本节课费用";
+                amtInput.value = "120"; // 默认120
+                topicInput.placeholder = "上课内容 (如 数学函数)";
+            }
+            amtInput.focus();
+        }
+
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        function addNewPackage() {
-            const amount = parseFloat(document.getElementById('income-input').value);
-            if (!amount || amount <= 0) return;
+        function handleSubmit() {
+            const amount = parseFloat(document.getElementById('amount-input').value);
+            const topic = document.getElementById('topic-input').value.trim() || (currentMode === 'INCOME' ? "新课时包" : "常规课");
+            
+            if (!amount) return;
 
-            const lessons = Math.floor(amount / UNIT_PRICE);
-            const newPkg = {
-                id: Date.now(),
-                amount: amount,
-                totalLessons: lessons,
-                usedLessons: 0,
-                date: new Date().toLocaleDateString('zh-CN', {month: '2-digit', day: '2-digit'}).replace(/\//g, '.')
-            };
+            if (currentMode === 'INCOME') {
+                const newPkg = {
+                    id: Date.now(),
+                    amount: amount,
+                    topic: topic,
+                    date: new Date().toLocaleDateString(),
+                    lessons: []
+                };
+                storage.packages.unshift(newPkg); // 新包放在最前面
+            } else {
+                // 默认扣除到最顶部的那个包（即最新的包）
+                const activePkg = storage.packages[0];
+                activePkg.lessons.unshift({
+                    topic: topic,
+                    amount: amount,
+                    date: new Date().toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'})
+                });
+            }
 
-            storage.packages.unshift(newPkg);
             saveData();
             closeModal();
         }
 
-        function recordLesson(id) {
-            const pkg = storage.packages.find(p => p.id === id);
-            if (pkg && pkg.usedLessons < pkg.totalLessons) {
-                // 简单的点击震动反馈（如果手机支持）
-                if (window.navigator && window.navigator.vibrate) {
-                    window.navigator.vibrate(50);
-                }
-                pkg.usedLessons++;
+        function deletePackage(id) {
+            if(confirm("确定要删除这个包及其所有记录吗？")) {
+                storage.packages = storage.packages.filter(p => p.id !== id);
                 saveData();
             }
         }
 
         function resetData() {
-            if (confirm("确定要清空所有数据吗？")) {
+            if(confirm("确定清空所有数据吗？")) {
                 storage.packages = [];
                 saveData();
             }
         }
 
         function render() {
-            const activeContainer = document.getElementById('active-container');
-            const historyList = document.getElementById('history-list');
-            const fabBox = document.getElementById('fab-box');
-            const totalIncomeDisplay = document.getElementById('total-income');
-            const totalHoursDisplay = document.getElementById('total-hours');
+            const container = document.getElementById('package-container');
+            const totalInDisp = document.getElementById('total-in');
+            const totalOutDisp = document.getElementById('total-out');
+            const totalNetDisp = document.getElementById('total-net');
+            
+            container.innerHTML = '';
+            
+            let overallIn = 0;
+            let overallOut = 0;
 
-            activeContainer.innerHTML = '';
-            historyList.innerHTML = '';
-            fabBox.innerHTML = '';
-
-            let totalIncome = 0;
-            let totalHours = 0;
-
-            // 找到第一个未完成的包
-            const activePkg = storage.packages.find(p => p.usedLessons < p.totalLessons);
-
-            // 统计总数据
-            storage.packages.forEach(p => {
-                totalIncome += p.amount;
-                totalHours += p.usedLessons;
-            });
-
-            if (!activePkg) {
-                activeContainer.innerHTML = `
-                    <div class="active-card" style="text-align:center; padding: 40px 20px;">
-                        <div style="font-size: 40px; margin-bottom: 10px;">☕</div>
-                        <p style="color:var(--text-sub); font-size: 15px;">当前没有进行中的课时<br>请点击下方“新入账”开始</p>
-                    </div>`;
-                
-                // 如果没有活跃包，底部按钮显示“新入账”
-                fabBox.innerHTML = `
-                    <button class="fab" onclick="openModal()" style="background:var(--text-main)">
-                        <span style="font-size:24px">＋</span>
-                    </button>
-                    <span class="fab-label">新入账</span>
-                `;
-            } else {
-                const remaining = activePkg.totalLessons - activePkg.usedLessons;
-                const progress = (activePkg.usedLessons / activePkg.totalLessons) * 100;
-                let statusClass = remaining <= 2 ? 'alert' : '';
-
-                activeContainer.innerHTML = `
-                    <div class="active-card ${statusClass}">
-                        <div class="card-header">
-                            <span class="badge">当前周期 · ${activePkg.date}</span>
-                            <span style="font-weight:bold; color:var(--primary)">¥${activePkg.amount}</span>
-                        </div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">
-                            已上 <span style="font-size: 2rem; color:var(--primary)">${activePkg.usedLessons}</span> / ${activePkg.totalLessons} 节
-                        </div>
-                        
-                        <div class="progress-container">
-                            <div class="progress-bar" style="width: ${progress}%"></div>
-                        </div>
-                        <div style="display:flex; justify-content: space-between; font-size: 13px; color: var(--text-sub);">
-                            <span>进度 ${Math.round(progress)}%</span>
-                            <span>剩余 ${remaining} 节</span>
-                        </div>
-
-                        ${remaining === 0 ? `<div class="renew-tip">⚠️ 课时已用尽，请沟通续费</div>` : ''}
-                        ${remaining <= 2 && remaining > 0 ? `<div class="renew-tip" style="color:var(--warning)">🔔 剩余课时较少，建议预提醒</div>` : ''}
-                    </div>
-                `;
-
-                // 渲染底部打卡大球
-                fabBox.innerHTML = `
-                    <button class="fab" onclick="recordLesson(${activePkg.id})">
-                        <span style="font-size:20px">✨</span>
-                        <span>打卡</span>
-                    </button>
-                    <span class="fab-label">记录本节课</span>
-                `;
+            if (storage.packages.length === 0) {
+                container.innerHTML = '<div class="empty-state">目前没有记录，请点击“新入账包”开始</div>';
             }
 
-            // 渲染历史列表（排除当前正在上的那个包）
             storage.packages.forEach(pkg => {
-                if (activePkg && pkg.id === activePkg.id) return;
+                const spent = pkg.lessons.reduce((sum, l) => sum + l.amount, 0);
+                const balance = pkg.amount - spent;
                 
-                const isFinished = pkg.usedLessons >= pkg.totalLessons;
-                historyList.innerHTML += `
-                    <div class="history-item">
-                        <div>
-                            <div style="font-weight:600">¥${pkg.amount} <span style="font-weight:normal; color:#999; font-size:12px">(${pkg.totalLessons}节)</span></div>
-                            <div class="history-date">${pkg.date} 录入</div>
+                overallIn += pkg.amount;
+                overallOut += spent;
+
+                let lessonsHtml = pkg.lessons.map(l => `
+                    <div class="lesson-item">
+                        <div class="lesson-info">
+                            <span class="lesson-topic">${l.topic}</span>
+                            <span class="lesson-date">${l.date}</span>
                         </div>
-                        <div style="color: ${isFinished ? 'var(--success)' : 'var(--warning)'}; font-weight:600">
-                            ${isFinished ? '已结课' : `上到第 ${pkg.usedLessons} 节`}
+                        <span class="lesson-amount">-￥${l.amount}</span>
+                    </div>
+                `).join('');
+
+                container.innerHTML += `
+                    <div class="package-card" ondblclick="deletePackage(${pkg.id})">
+                        <div class="package-header">
+                            <div>
+                                <div class="package-title">${pkg.topic}</div>
+                                <div class="package-date">入账: ￥${pkg.amount} · ${pkg.date}</div>
+                            </div>
+                            <div class="package-balance">
+                                <div class="balance-label">剩余余额</div>
+                                <div class="balance-num ${balance < 0 ? 'negative' : 'positive'}">
+                                    ${balance < 0 ? '' : ''}${balance.toFixed(0)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lesson-list">
+                            ${lessonsHtml || '<div style="color:#ccc; font-size:12px; text-align:center; padding:10px;">暂无消耗记录</div>'}
                         </div>
                     </div>
                 `;
             });
 
-            totalIncomeDisplay.innerText = `¥ ${totalIncome}`;
-            totalHoursDisplay.innerText = `${totalHours} 小时`;
+            totalInDisp.innerText = `¥${overallIn.toFixed(0)}`;
+            totalOutDisp.innerText = `¥${overallOut.toFixed(0)}`;
+            const net = overallIn - overallOut;
+            totalNetDisp.innerText = `¥${net.toFixed(0)}`;
+            totalNetDisp.style.color = net < 0 ? 'var(--danger)' : 'white';
         }
 
         render();
