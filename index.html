@@ -16,21 +16,10 @@
             --alert-red: #ef4444;
         }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-main);
-            padding: 20px 16px env(safe-area-inset-bottom);
-            max-width: 480px;
-            margin: 0 auto;
-            overflow-x: hidden;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif; -webkit-font-smoothing: antialiased; }
+        
+        body { background-color: var(--bg-canvas); color: var(--text-main); padding: 20px 16px 140px; max-width: 480px; margin: 0 auto; position: relative; min-height: 100vh; }
+        
         header { padding: 10px 0 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
@@ -50,214 +39,204 @@
         .pkg-card {
             background: var(--card-bg); border-radius: 20px; padding: 18px;
             margin-bottom: 16px; border: 1px solid #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative;
         }
         .pkg-card.collapsed .lesson-list { display: none; }
-        .pkg-card.collapsed { padding: 12px 18px; opacity: 0.8; }
-
-        .pkg-header { display: flex; justify-content: space-between; align-items: center; }
+        .pkg-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .pkg-info h3 { font-size: 16px; font-weight: 700; }
         .pkg-info p { font-size: 11px; color: var(--text-sub); }
-        .pkg-status { text-align: right; cursor: pointer; }
-        .balance-tag { padding: 4px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; }
+        .pkg-actions { display: flex; align-items: center; gap: 10px; }
+        .balance-tag { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; }
         .tag-green { background: #ecfdf5; color: var(--safe-green); }
         .tag-red { background: #fef2f2; color: var(--alert-red); }
+        .bill-btn { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
-        /* 课时行 */
-        .lesson-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-top: 1px solid #f1f5f9; margin-top: 12px;
-        }
-        .lesson-main { flex: 1; }
-        .student-name { font-size: 15px; font-weight: 600; color: #334155; }
+        .lesson-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid #f1f5f9; }
+        .student-name { font-size: 15px; font-weight: 600; }
         .lesson-date-final { font-size: 14px; color: var(--text-sub); font-weight: 500; }
-        
-        .lesson-ctrl { display: flex; align-items: center; gap: 10px; }
-        .lesson-amt { font-size: 14px; font-weight: 700; }
-        
-        /* 打勾按钮 */
-        .check-btn {
-            width: 28px; height: 28px; border-radius: 50%; 
-            border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; color: transparent;
-        }
+        .check-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: transparent; font-size: 12px;}
         .check-btn.confirmed { background: var(--safe-green); border-color: var(--safe-green); color: white; }
-        .check-btn:not(.confirmed):active { transform: scale(1.2); border-color: var(--brand-primary); }
 
-        /* 底部导航 */
-        .dock {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(10px); border-radius: 25px; padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        /* 归档层 - pointer-events 修复 */
+        .archive-overlay { 
+            position: fixed; inset: 0; background: var(--bg-canvas); 
+            z-index: 2000; padding: 20px 16px; 
+            transform: translateY(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            overflow-y: auto; visibility: hidden; pointer-events: none;
         }
-        .dock-btn { background: none; border: none; color: #94a3b8; font-size: 13px; font-weight: 600; padding: 10px; }
-        .dock-btn.active { color: white; }
-        .main-add-btn {
-            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
-            color: white; border: none; padding: 10px 20px; border-radius: 15px;
-            font-weight: 700; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
-        }
+        .archive-overlay.active { transform: translateY(0); visibility: visible; pointer-events: auto; }
 
-        /* 全屏历史层 */
-        .archive-overlay {
-            position: fixed; inset: 0; background: var(--bg-canvas); z-index: 2000;
-            padding: 20px 16px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow-y: auto;
+        /* 底部 Dock - z-index 霸权 */
+        .dock { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            width: 92%; max-width: 400px; background: rgba(30, 41, 59, 0.95); 
+            backdrop-filter: blur(10px); border-radius: 25px; padding: 12px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 3000;
         }
-        .archive-overlay.active { transform: translateY(0); }
-        .archive-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .archive-item {
-            background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .dock-btn { background: none; border: none; color: #94a3b8; font-size: 13px; font-weight: 600; padding: 10px; cursor: pointer; }
+        .main-add-btn { background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)); color: white; border: none; padding: 12px 24px; border-radius: 15px; font-weight: 700; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3); cursor: pointer;}
 
-        /* 弹窗录入 */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-            display: none; align-items: flex-end; z-index: 3000;
-        }
+        /* 账单层 */
+        #bill-overlay { position: fixed; inset: 0; background: white; z-index: 5000; display: none; flex-direction: column; padding: 50px 30px; overflow-y: auto; }
+        .bill-paper { background: white; width: 100%; max-width: 400px; margin: 0 auto; }
+        .bill-header { border-bottom: 2px solid #1e293b; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .bill-logo { font-size: 22px; font-weight: 800; color: #1e293b; max-width: 60%; }
+        .bill-meta { font-size: 14px; color: var(--text-sub); }
+        .bill-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .bill-table th { text-align: left; font-size: 12px; color: var(--text-sub); border-bottom: 1px solid #eee; padding: 10px 0; }
+        .bill-table td { padding: 14px 0; border-bottom: 1px solid #f9f9f9; font-size: 15px; }
+        .bill-summary { background: #f8fafc; padding: 25px; border-radius: 20px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .summary-total { border-top: 1px solid #eee; padding-top: 12px; margin-top: 12px; font-weight: 800; font-size: 20px; color: #1e293b; }
+        .bill-close-btn { margin-top: 30px; width: 100%; padding: 16px; border-radius: 15px; background: #f1f5f9; border: none; font-weight: 700; color: var(--text-main); }
+
+        /* 弹窗样式 */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: flex-end; z-index: 4000; }
         .modal-overlay.active { display: flex; }
-        .modal-content {
-            background: white; width: 100%; border-radius: 25px 25px 0 0;
-            padding: 25px 20px 40px; animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
+        .modal-content { background: white; width: 100%; border-radius: 25px 25px 0 0; padding: 25px 20px 40px; }
         .student-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-        .student-pill {
-            flex: 1; padding: 15px; border-radius: 15px; border: 2px solid #f1f5f9;
-            text-align: center; font-weight: 700; cursor: pointer; transition: 0.2s;
-        }
+        .student-pill { flex: 1; padding: 15px; border-radius: 15px; border: 2px solid #f1f5f9; text-align: center; font-weight: 700; cursor: pointer; }
         .student-pill.active { border-color: var(--brand-primary); background: #eef2ff; color: var(--brand-primary); }
-
-        .btn-group { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
-        .btn { padding: 15px; border-radius: 15px; border: none; font-weight: 700; font-size: 15px; }
-        .btn-cancel { background: #f1f5f9; color: var(--text-sub); }
-        .btn-save { background: var(--text-main); color: white; }
-
-        .del-x { font-size: 18px; color: #cbd5e1; margin-left: 10px; cursor: pointer; }
+        
+        .input-style { width:100%; padding:15px; background:#f1f5f9; border:none; border-radius:15px; margin-bottom:15px; font-size:16px; outline-color: var(--brand-primary); }
     </style>
 </head>
-<body>
+<body onclick="closeModal()">
 
     <header>
         <h1>Class Recorder</h1>
-        <button onclick="toggleArchive(true)" class="dock-btn" style="color: var(--brand-primary)">历史归档</button>
+        <button onclick="event.stopPropagation(); toggleArchive(true)" class="dock-btn" style="color: var(--brand-primary)">历史归档</button>
     </header>
 
     <div class="wallet-card">
         <div class="stat-label">总计余额</div>
         <div class="wallet-balance" id="net-balance">¥ 0.00</div>
         <div class="wallet-stats">
-            <div class="stat-item">
-                <div class="stat-label">累计入账</div>
-                <div class="stat-val" id="total-in">¥ 0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">累计消耗</div>
-                <div class="stat-val" id="total-out">¥ 0</div>
-            </div>
+            <div class="stat-item"><div class="stat-label">累计入账</div><div class="stat-val" id="total-in">¥ 0</div></div>
+            <div class="stat-item"><div class="stat-label">累计消耗</div><div class="stat-val" id="total-out">¥ 0</div></div>
         </div>
     </div>
 
-    <div id="main-list">
-        <!-- 这里只显示最近3个包 -->
-    </div>
+    <div id="main-list"></div>
 
     <!-- 底部 Dock -->
-    <div class="dock">
+    <div class="dock" onclick="event.stopPropagation()">
         <button class="dock-btn" onclick="resetData()">清空</button>
         <button class="main-add-btn" onclick="openModal('EXPENSE')">✨ 记一节课</button>
         <button class="dock-btn" onclick="openModal('INCOME')">新入账</button>
     </div>
 
-    <!-- 历史归档全屏层 -->
-    <div class="archive-overlay" id="archive-view">
-        <div class="archive-title">
-            <h2 style="font-size: 24px;">历史记录</h2>
-            <button class="btn-cancel" style="padding: 8px 15px; border-radius: 10px;" onclick="toggleArchive(false)">关闭</button>
+    <!-- 电子账单层 -->
+    <div id="bill-overlay" onclick="event.stopPropagation()">
+        <div class="bill-paper">
+            <div class="bill-header">
+                <div class="bill-logo" id="bill-title">课程结算单</div>
+                <div class="bill-meta" id="bill-date"></div>
+            </div>
+            <table class="bill-table">
+                <thead><tr><th>课程日期 & 事项</th><th style="text-align: right;">金额</th></tr></thead>
+                <tbody id="bill-table-body"></tbody>
+            </table>
+            <div class="bill-summary">
+                <div class="summary-row"><span>入账总额</span><span id="bill-total-in">¥ 0</span></div>
+                <div class="summary-row"><span>已消耗额</span><span id="bill-total-out">¥ 0</span></div>
+                <div class="summary-row summary-total"><span>剩余结余</span><span id="bill-net">¥ 0</span></div>
+            </div>
+        </div>
+        <button class="bill-close-btn" onclick="closeBill()">返回列表</button>
+        <p style="text-align:center; font-size:12px; color:#ccc; margin-top:20px;">请手动截图此页面发送给家长</p>
+    </div>
+
+    <!-- 历史归档层 -->
+    <div class="archive-overlay" id="archive-view" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="font-size: 20px;">历史包存档</h2>
+            <button class="dock-btn" onclick="toggleArchive(false)">关闭</button>
         </div>
         <div id="archive-list"></div>
     </div>
 
     <!-- 录入弹窗 -->
     <div class="modal-overlay" id="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" onclick="event.stopPropagation()">
             <h3 id="modal-title" style="margin-bottom: 20px;">记一节课</h3>
+            
             <div id="student-selector-box" class="student-selector">
                 <div class="student-pill" onclick="selectStudent('芷嫣')">芷嫣</div>
                 <div class="student-pill" onclick="selectStudent('Max')">Max</div>
             </div>
-            <input type="number" id="amt-input" placeholder="输入金额" inputmode="decimal" style="width:100%; padding:15px; background:#f1f5f9; border:none; border-radius:15px; margin-bottom:20px; font-size:16px;">
-            <div class="btn-group">
-                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
-                <button class="btn btn-save" onclick="handleSubmit()">保存记录</button>
+
+            <!-- 新增的命名输入框 -->
+            <input type="text" id="topic-input" class="input-style" placeholder="给这个课包起个名字 (如: 7月课费)">
+            <input type="number" id="amt-input" class="input-style" placeholder="金额" inputmode="decimal">
+            
+            <div style="display:flex; gap:10px;">
+                <button class="dock-btn" style="background:#f1f5f9; flex:1; border-radius:12px;" onclick="closeModal()">取消</button>
+                <button class="main-add-btn" style="flex:2;" onclick="handleSubmit()">确认保存</button>
             </div>
         </div>
     </div>
 
     <script>
-        let storage = JSON.parse(localStorage.getItem('tutor_v4_data')) || { packages: [] };
+        let storage = JSON.parse(localStorage.getItem('tutor_v5_data')) || { packages: [] };
         let currentMode = 'EXPENSE';
-        let selectedStudent = '';
+        let selectedStudent = '芷嫣';
 
-        function saveData() {
-            localStorage.setItem('tutor_v4_data', JSON.stringify(storage));
-            render();
-        }
-
-        function toggleArchive(show) {
-            document.getElementById('archive-view').classList.toggle('active', show);
-        }
-
-        function selectStudent(name) {
-            selectedStudent = name;
-            document.querySelectorAll('.student-pill').forEach(p => {
-                p.classList.toggle('active', p.innerText === name);
-            });
-        }
-
+        function saveData() { localStorage.setItem('tutor_v5_data', JSON.stringify(storage)); render(); }
+        function toggleArchive(show) { document.getElementById('archive-view').classList.toggle('active', show); }
+        
         function openModal(mode) {
             currentMode = mode;
             document.getElementById('modal-overlay').classList.add('active');
-            document.getElementById('modal-title').innerText = mode === 'INCOME' ? '新建入账包' : '记一节课';
-            document.getElementById('student-selector-box').style.display = mode === 'INCOME' ? 'none' : 'flex';
-            if(mode === 'EXPENSE') selectStudent('芷嫣');
-            document.getElementById('amt-input').value = mode === 'EXPENSE' ? 120 : '';
-            document.getElementById('amt-input').focus();
+            const titleEl = document.getElementById('modal-title');
+            const studentBox = document.getElementById('student-selector-box');
+            const topicInput = document.getElementById('topic-input');
+            const amtInput = document.getElementById('amt-input');
+
+            if(mode === 'INCOME') {
+                titleEl.innerText = '新建入账包';
+                studentBox.style.display = 'none';
+                topicInput.style.display = 'block';
+                topicInput.value = '';
+                amtInput.placeholder = '输入总金额';
+                amtInput.value = '';
+                setTimeout(() => topicInput.focus(), 100);
+            } else {
+                titleEl.innerText = '记一节课';
+                studentBox.style.display = 'flex';
+                topicInput.style.display = 'none';
+                amtInput.placeholder = '本节费用';
+                amtInput.value = 120;
+                setTimeout(() => amtInput.focus(), 100);
+            }
         }
 
-        function closeModal() {
-            document.getElementById('modal-overlay').classList.remove('active');
-            selectedStudent = '';
+        function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
+        function selectStudent(name) {
+            selectedStudent = name;
+            document.querySelectorAll('.student-pill').forEach(p => p.classList.toggle('active', p.innerText === name));
         }
 
         function handleSubmit() {
             const amt = parseFloat(document.getElementById('amt-input').value);
+            const topic = document.getElementById('topic-input').value.trim();
             if(!amt) return;
 
             if(currentMode === 'INCOME') {
-                storage.packages.unshift({
-                    id: Date.now(),
-                    amount: amt,
-                    topic: "新课时包",
-                    date: new Date().toLocaleDateString(),
-                    lessons: [],
-                    isManualExpand: false
+                storage.packages.unshift({ 
+                    id: Date.now(), 
+                    amount: amt, 
+                    topic: topic || "新课时包", 
+                    date: new Date().toLocaleDateString(), 
+                    lessons: [], 
+                    isManualExpand: false 
                 });
             } else {
-                if(storage.packages.length === 0) return alert("没有入账包");
-                storage.packages[0].lessons.unshift({
-                    id: Date.now(),
-                    amount: amt,
-                    student: selectedStudent,
-                    isConfirmed: false,
-                    confirmedTitle: ''
-                });
+                if(storage.packages.length === 0) return alert("请先创建一个入账包");
+                storage.packages[0].lessons.unshift({ id: Date.now(), amount: amt, student: selectedStudent, isConfirmed: false, confirmedTitle: '' });
             }
-            saveData();
-            closeModal();
+            saveData(); closeModal();
         }
 
         function confirmLesson(pkgId, lesId) {
@@ -265,113 +244,98 @@
             const les = pkg.lessons.find(l => l.id === lesId);
             if(!les.isConfirmed) {
                 const now = new Date();
-                const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-                les.confirmedTitle = `${dateStr} ${les.student}`;
+                les.confirmedTitle = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${les.student}`;
                 les.isConfirmed = true;
                 saveData();
             }
         }
 
-        function delLesson(pkgId, lesId) {
-            if(!confirm("删除记录？")) return;
+        function showBill(pkgId) {
             const pkg = storage.packages.find(p => p.id === pkgId);
-            pkg.lessons = pkg.lessons.filter(l => l.id !== lesId);
-            saveData();
+            const spent = pkg.lessons.reduce((s, l) => s + l.amount, 0);
+            document.getElementById('bill-title').innerText = pkg.topic; // 账单抬头使用自定义名字
+            document.getElementById('bill-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('bill-total-in').innerText = `¥ ${pkg.amount}`;
+            document.getElementById('bill-total-out').innerText = `¥ ${spent}`;
+            document.getElementById('bill-net').innerText = `¥ ${pkg.amount - spent}`;
+            const tbody = document.getElementById('bill-table-body');
+            tbody.innerHTML = pkg.lessons.map(l => `
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">${l.isConfirmed ? l.confirmedTitle : (l.student + ' (待确认)')}</div>
+                        <div style="font-size:11px; color:#999;">${l.isConfirmed ? '已授课' : '预约排课'}</div>
+                    </td>
+                    <td style="text-align:right; font-weight:700;">- ¥ ${l.amount}</td>
+                </tr>
+            `).join('');
+            document.getElementById('bill-overlay').style.display = 'flex';
         }
 
-        function togglePkgFold(pkgId) {
-            const pkg = storage.packages.find(p => p.id === pkgId);
-            pkg.isManualExpand = !pkg.isManualExpand;
-            render();
-        }
-
-        function resetData() {
-            if(confirm("确定清空全部吗？")) { storage.packages = []; saveData(); }
-        }
+        function closeBill() { document.getElementById('bill-overlay').style.display = 'none'; }
 
         function render() {
             const mainList = document.getElementById('main-list');
             const archiveList = document.getElementById('archive-list');
             let totalIn = 0, totalOut = 0;
-
-            mainList.innerHTML = '';
-            archiveList.innerHTML = '';
+            mainList.innerHTML = ''; archiveList.innerHTML = '';
 
             storage.packages.forEach((pkg, index) => {
                 const spent = pkg.lessons.reduce((s, l) => s + l.amount, 0);
                 const balance = pkg.amount - spent;
-                totalIn += pkg.amount;
-                totalOut += spent;
+                totalIn += pkg.amount; totalOut += spent;
 
-                // 核心逻辑：余额为0自动收起，除非手动点开
                 const isCollapsed = balance <= 0 && !pkg.isManualExpand;
 
                 const lessonsHtml = pkg.lessons.map(l => `
                     <div class="lesson-row">
                         <div class="lesson-main">
-                            <div class="${l.isConfirmed ? 'lesson-date-final' : 'student-name'}">
-                                ${l.isConfirmed ? l.confirmedTitle : l.student}
-                            </div>
+                            <div class="${l.isConfirmed ? 'lesson-date-final' : 'student-name'}">${l.isConfirmed ? l.confirmedTitle : l.student}</div>
                         </div>
                         <div class="lesson-ctrl">
-                            <div class="lesson-amt">￥${l.amount}</div>
+                            <div style="font-weight:700; font-size:14px;">￥${l.amount}</div>
                             <div class="check-btn ${l.isConfirmed ? 'confirmed' : ''}" onclick="confirmLesson(${pkg.id}, ${l.id})">✓</div>
-                            <div class="del-x" onclick="delLesson(${pkg.id}, ${l.id})">×</div>
                         </div>
                     </div>
                 `).join('');
 
                 const cardHtml = `
                     <div class="pkg-card ${isCollapsed ? 'collapsed' : ''}">
-                        <div class="pkg-header" onclick="togglePkgFold(${pkg.id})">
-                            <div class="pkg-info">
-                                <h3>${pkg.topic} ${isCollapsed ? ' (已结清)' : ''}</h3>
-                                <p>￥${pkg.amount} · ${pkg.date} 入账</p>
+                        <div class="pkg-header">
+                            <div class="pkg-info" onclick="toggleFold(${pkg.id})">
+                                <h3>${pkg.topic}</h3>
+                                <p>入账: ￥${pkg.amount} · ${pkg.date}</p>
                             </div>
-                            <div class="pkg-status">
-                                <span class="balance-tag ${balance <= 0 ? 'tag-red' : 'tag-green'}">
-                                    ${balance <= 0 ? '结清' : '剩 ' + balance.toFixed(0)}
-                                </span>
+                            <div class="pkg-actions">
+                                <button class="bill-btn" onclick="showBill(${pkg.id})">📄</button>
+                                <span class="balance-tag ${balance <= 0 ? 'tag-red' : 'tag-green'}">${balance <= 0 ? '已结清' : '剩 '+balance.toFixed(0)}</span>
                             </div>
                         </div>
                         <div class="lesson-list">${lessonsHtml}</div>
                     </div>
                 `;
 
-                // 只在主界面显示前 3 个
-                if(index < 3) {
-                    mainList.innerHTML += cardHtml;
-                }
-
-                // 归档列表显示所有
-                archiveList.innerHTML += `
-                    <div class="archive-item">
-                        <div>
-                            <div style="font-weight:700;">${pkg.date} 的课时包</div>
-                            <div style="font-size:12px; color:var(--text-sub);">总额: ￥${pkg.amount} / 剩余: ￥${balance.toFixed(0)}</div>
-                        </div>
-                        <div style="color:var(--brand-primary); font-size:12px; font-weight:700;" onclick="viewArchiveDetail(${pkg.id})">查看明细</div>
+                if(index < 3) mainList.innerHTML += cardHtml;
+                archiveList.innerHTML += `<div class="pkg-card" style="margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:14px; font-weight:600;">${pkg.topic} (￥${pkg.amount})</span>
+                        <button class="bill-btn" onclick="showBill(${pkg.id})">📄 账单</button>
                     </div>
-                `;
+                </div>`;
             });
 
-            document.getElementById('total-in').innerText = `¥ ${totalIn}`;
-            document.getElementById('total-out').innerText = `¥ ${totalOut}`;
             const net = totalIn - totalOut;
             document.getElementById('net-balance').innerText = `¥ ${net.toFixed(2)}`;
+            document.getElementById('total-in').innerText = `¥ ${totalIn}`;
+            document.getElementById('total-out').innerText = `¥ ${totalOut}`;
             document.getElementById('net-balance').style.color = net < 0 ? '#fda4af' : 'white';
         }
 
-        function viewArchiveDetail(id) {
-            // 点击历史里的某个包，直接在主界面显示（如果是第3个之后，可以将其置顶或者临时显示，这里采用最简单做法：关闭归档，手动找主界面）
-            // 进阶：可以将该包临时移动到 storage.packages 的第一位
-            const idx = storage.packages.findIndex(p => p.id === id);
-            const target = storage.packages.splice(idx, 1)[0];
-            storage.packages.unshift(target);
-            saveData();
-            toggleArchive(false);
+        function toggleFold(id) { 
+            const pkg = storage.packages.find(p => p.id === id);
+            pkg.isManualExpand = !pkg.isManualExpand;
+            render();
         }
-
+        function resetData() { if(confirm("确定清空全部数据吗？")) { storage.packages = []; saveData(); } }
         render();
     </script>
 </body>
